@@ -13,7 +13,7 @@ import type { Delivery } from '@/types/farmer';
 export default function Deliveries() {
   const [deliveries, setDeliveries] = useState<Delivery[]>(mockDeliveries);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ farmerId: '', kg: '', qualityGrade: 'A' as const, buyingCenter: '' });
+  const [form, setForm] = useState({ farmerId: '', kg: '', qualityGrade: 'A' as Delivery['qualityGrade'], buyingCenter: '' });
 
   const handleAdd = () => {
     const farmer = mockFarmers.find(f => f.id === form.farmerId);
