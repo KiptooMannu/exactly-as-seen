@@ -1,0 +1,16 @@
+{
+  "name": "TeaCRM",
+  "short_name": "TeaCRM",
+  "description": "Farmer CRM for Tea Extension Services",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf9f6",
+  "theme_color": "#2d6b4f",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
