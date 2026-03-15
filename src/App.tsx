@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/layout/AppLayout";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Farmers from "./pages/Farmers";
 import FarmerForm from "./pages/FarmerForm";
@@ -26,23 +27,44 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <AppLayout>{children}</AppLayout>;
 }
 
+function RoleProtectedRoute({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: import('@/types/farmer').UserRole[] }) {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  
+  if (!allowedRoles.includes(user.role)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return <>{children}</>;
+}
+
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
 
   return (
     <Routes>
       <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} />
+      <Route path="/register" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      
+      {/* Shared routes */}
       <Route path="/farmers" element={<ProtectedRoute><Farmers /></ProtectedRoute>} />
       <Route path="/farmers/new" element={<ProtectedRoute><FarmerForm /></ProtectedRoute>} />
       <Route path="/farmers/:id" element={<ProtectedRoute><FarmerDetail /></ProtectedRoute>} />
-      <Route path="/deliveries" element={<ProtectedRoute><Deliveries /></ProtectedRoute>} />
       <Route path="/interactions" element={<ProtectedRoute><Interactions /></ProtectedRoute>} />
-      <Route path="/complaints" element={<ProtectedRoute><Complaints /></ProtectedRoute>} />
-      <Route path="/extension-visits" element={<ProtectedRoute><ExtensionVisits /></ProtectedRoute>} />
-      <Route path="/prioritization" element={<ProtectedRoute><Prioritization /></ProtectedRoute>} />
-      <Route path="/staff-performance" element={<ProtectedRoute><StaffPerformance /></ProtectedRoute>} />
+
+      {/* Clerk and Admin only */}
+      <Route path="/deliveries" element={<ProtectedRoute><RoleProtectedRoute allowedRoles={['admin', 'clerk']}><Deliveries /></RoleProtectedRoute></ProtectedRoute>} />
+      <Route path="/complaints" element={<ProtectedRoute><RoleProtectedRoute allowedRoles={['admin', 'clerk']}><Complaints /></RoleProtectedRoute></ProtectedRoute>} />
+      
+      {/* Extension Officer and Admin only */}
+      <Route path="/extension-visits" element={<ProtectedRoute><RoleProtectedRoute allowedRoles={['admin', 'extension_officer']}><ExtensionVisits /></RoleProtectedRoute></ProtectedRoute>} />
+      <Route path="/prioritization" element={<ProtectedRoute><RoleProtectedRoute allowedRoles={['admin', 'extension_officer']}><Prioritization /></RoleProtectedRoute></ProtectedRoute>} />
+
+      {/* Admin only */}
+      <Route path="/staff-performance" element={<ProtectedRoute><RoleProtectedRoute allowedRoles={['admin']}><StaffPerformance /></RoleProtectedRoute></ProtectedRoute>} />
+      
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

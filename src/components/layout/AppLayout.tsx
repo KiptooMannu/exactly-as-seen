@@ -8,15 +8,17 @@ import {
   MapPin, BarChart3, UserCheck, Menu, LogOut, Leaf,
 } from 'lucide-react';
 
-const navItems = [
+import type { UserRole } from '@/types/farmer';
+
+const navItems: { to: string; icon: any; label: string; allowedRoles?: UserRole[] }[] = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/farmers', icon: Users, label: 'Farmers' },
-  { to: '/deliveries', icon: Truck, label: 'Deliveries' },
+  { to: '/deliveries', icon: Truck, label: 'Deliveries', allowedRoles: ['admin', 'clerk'] },
   { to: '/interactions', icon: MessageSquare, label: 'Interactions' },
-  { to: '/complaints', icon: AlertTriangle, label: 'Complaints' },
-  { to: '/extension-visits', icon: MapPin, label: 'Extension Visits' },
-  { to: '/prioritization', icon: BarChart3, label: 'Prioritization' },
-  { to: '/staff-performance', icon: UserCheck, label: 'Staff Performance' },
+  { to: '/complaints', icon: AlertTriangle, label: 'Complaints', allowedRoles: ['admin', 'clerk'] },
+  { to: '/extension-visits', icon: MapPin, label: 'Extension Visits', allowedRoles: ['admin', 'extension_officer'] },
+  { to: '/prioritization', icon: BarChart3, label: 'Prioritization', allowedRoles: ['admin', 'extension_officer'] },
+  { to: '/staff-performance', icon: UserCheck, label: 'Staff Performance', allowedRoles: ['admin'] },
 ];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
@@ -40,7 +42,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-        {navItems.map(({ to, icon: Icon, label }) => {
+        {navItems.map(({ to, icon: Icon, label, allowedRoles }) => {
+          if (allowedRoles && user && !allowedRoles.includes(user.role)) return null;
+          
           const active = location.pathname === to;
           return (
             <Link

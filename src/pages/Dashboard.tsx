@@ -13,11 +13,11 @@ export default function Dashboard() {
   const pendingFollowups = mockVisits.filter(v => !v.followUpOutcome).length;
 
   const stats = [
-    { label: 'Active Farmers', value: activeFarmers, total: mockFarmers.length, icon: Users, color: 'text-primary' },
-    { label: "Today's Deliveries", value: `${todayKg} kg`, sub: `${mockDeliveries.filter(d => d.date === '2026-03-14').length} records`, icon: Truck, color: 'text-success' },
-    { label: 'Open Complaints', value: openComplaints, sub: 'need attention', icon: AlertTriangle, color: 'text-destructive' },
-    { label: 'Pending Follow-ups', value: pendingFollowups, sub: 'extension visits', icon: MapPin, color: 'text-accent' },
-  ];
+    { label: 'Active Farmers', value: activeFarmers, total: mockFarmers.length, icon: Users, color: 'text-primary', roles: ['admin', 'clerk', 'extension_officer'] },
+    { label: "Today's Deliveries", value: `${todayKg} kg`, sub: `${mockDeliveries.filter(d => d.date === '2026-03-14').length} records`, icon: Truck, color: 'text-success', roles: ['admin', 'clerk'] },
+    { label: 'Open Complaints', value: openComplaints, sub: 'need attention', icon: AlertTriangle, color: 'text-destructive', roles: ['admin', 'clerk'] },
+    { label: 'Pending Follow-ups', value: pendingFollowups, sub: 'extension visits', icon: MapPin, color: 'text-accent', roles: ['admin', 'extension_officer'] },
+  ].filter(s => s.roles.includes(user?.role || 'clerk'));
 
   return (
     <div>
@@ -47,25 +47,27 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent Deliveries */}
-        <Card>
-          <CardHeader><CardTitle className="text-base">Recent Deliveries</CardTitle></CardHeader>
-          <CardContent className="p-0">
-            <table className="data-table">
-              <thead><tr><th>Farmer</th><th>Kg</th><th>Grade</th><th>Center</th></tr></thead>
-              <tbody>
-                {mockDeliveries.slice(0, 5).map(d => (
-                  <tr key={d.id}>
-                    <td className="font-medium">{d.farmerName}</td>
-                    <td>{d.kg}</td>
-                    <td><Badge variant={d.qualityGrade === 'A' ? 'default' : 'secondary'}>{d.qualityGrade}</Badge></td>
-                    <td className="text-muted-foreground">{d.buyingCenter}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
+        {/* Recent Deliveries - Admin and Clerk Only */}
+        {(user?.role === 'admin' || user?.role === 'clerk') && (
+          <Card>
+            <CardHeader><CardTitle className="text-base">Recent Deliveries</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <table className="data-table">
+                <thead><tr><th>Farmer</th><th>Kg</th><th>Grade</th><th>Center</th></tr></thead>
+                <tbody>
+                  {mockDeliveries.slice(0, 5).map(d => (
+                    <tr key={d.id}>
+                      <td className="font-medium">{d.farmerName}</td>
+                      <td>{d.kg}</td>
+                      <td><Badge variant={d.qualityGrade === 'A' ? 'default' : 'secondary'}>{d.qualityGrade}</Badge></td>
+                      <td className="text-muted-foreground">{d.buyingCenter}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Supply Alerts */}
         <Card>
@@ -90,7 +92,7 @@ export default function Dashboard() {
               </div>
             ))}
 
-            {mockComplaints.filter(c => c.status === 'open').map(c => (
+            {(user?.role === 'admin' || user?.role === 'clerk') && mockComplaints.filter(c => c.status === 'open').map(c => (
               <div key={c.id} className="flex items-center justify-between rounded-lg border border-destructive/20 bg-destructive/5 p-3">
                 <div>
                   <p className="font-medium text-sm">{c.farmerName}</p>

@@ -4,6 +4,7 @@ import type { User, UserRole } from '@/types/farmer';
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string, role: UserRole) => boolean;
+  register: (name: string, email: string, password: string, role: UserRole) => boolean;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -28,13 +29,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return true;
   }, []);
 
+  const register = useCallback((name: string, email: string, _password: string, role: UserRole) => {
+    const newUser: User = {
+      id: crypto.randomUUID(),
+      name,
+      email,
+      role,
+    };
+    setUser(newUser);
+    localStorage.setItem('crm_user', JSON.stringify(newUser));
+    return true;
+  }, []);
+
   const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem('crm_user');
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );
